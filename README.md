@@ -25,6 +25,9 @@ You will need:
 - Maven Installed (I use version 3.3.9)
 - Eclipse (Or another Java IDE)
 - Firefox Browser Installed (Version 47 or above)
+
+#### Important: This suite should work on both windows and mac platforms however has only been tested on a Mac. If possible please use a Mac to execute the test suite
+
 ```
 
 In order to execute the automation suite navigate to the Project directory within a Terminal/CMD window and run the command: *'mvn clean test'*.
