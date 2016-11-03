@@ -39,6 +39,7 @@
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
 					<showWarnings>false</showWarnings>
+					<argLine>-Xms512m -Xmx1024m</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
