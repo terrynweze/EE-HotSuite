@@ -78,4 +78,16 @@ public class HotelBookingTests extends BaseTest {
 		bookingPage.givenICreateANewBooking(booking, BookingPage.EXPECTED_FAILURE).
 			thenTheBookingIsNotDisplayed(booking);
 	}
+	
+	@Test(description = "", dataProvider = "DefaultDataProvider", groups = { "sanity" })
+	public void UnableToCreateBookingsInThePast(SeDriver se) {
+		se.log().logTestName(se.currentBrowser().toString(),"Unable to create bookings in the past");
+		
+		Booking booking = new Booking("past", "booking");
+		booking.setCheckin(booking.getDate(-4));
+		BookingPage bookingPage = new BookingPage(se);
+		
+		bookingPage.givenICreateANewBooking(booking, BookingPage.EXPECTED_FAILURE).
+			thenTheBookingIsNotDisplayed(booking);
+	}
 }

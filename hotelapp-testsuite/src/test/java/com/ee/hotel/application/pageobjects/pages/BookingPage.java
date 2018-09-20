@@ -154,7 +154,7 @@ public class BookingPage extends BasePageObject {
 		se.element().sleep(2 * 1000);
 		se.browser().refresh();
 
-		se.verify().assertTrue("The booking is present: ", !isBookingPresent(booking, false));
+		se.verify().assertFalse("The booking is present: ", isBookingPresent(booking, false));
 	}
 
 	public void thenTheCorrectFormFieldsAreDisplayed() {
@@ -252,16 +252,10 @@ public class BookingPage extends BasePageObject {
 					.getText();
 
 			if(isBookingPresent(booking, fName, lName, price, deposit,checkin, checkout)){
-				if(expected){
-					se.log().logInfo("Booking has been located succesfully for: " + generateBookingLogString(booking));
-					return true;
-				}	
+				se.log().logInfo("Booking has been located for: " + generateBookingLogString(booking));
+				return true;	
 			}
 			
-//			else{
-//				se.log().logInfo("Unable to locate Booking for: "+ generateBookingLogString(booking));
-//				//return false;
-//			}
 		}
 		
 		se.log().logInfo("Unable to locate Booking for: "+ generateBookingLogString(booking));

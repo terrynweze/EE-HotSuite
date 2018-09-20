@@ -91,10 +91,9 @@ public class Booking {
 	public String getCheckout() {
 		return this.checkout;
 	}
-
+	
 	public boolean getRandomBoolean() {
 		return Math.random() < 0.5;
-		// I tried another approaches here, still the same result
 	}
 	
 	public String getDate(int addition) {
