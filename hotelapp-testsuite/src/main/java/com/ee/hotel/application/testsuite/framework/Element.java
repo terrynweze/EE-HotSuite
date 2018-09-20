@@ -686,24 +686,7 @@ public class Element {
         } 
     }
 
-    /**
-     * wait for some text to appear within an element
-     * will return false if text does not appear before the globalSeTimeOut is reached
-     *
-     * @param locator
-     * @param text
-     * @return
-     */
-    public Element waitForTextIsPresent(final By locator, String text) {
-         WebDriverWait wait = new WebDriverWait(se.driver(), globalSeTimeOut);
-        try {
-            wait.ignoring(StaleElementReferenceException.class).until(containsText(locator, text));
-            return this;
-        } catch (Throwable t) {
-            System.out.println(t);
-            return null;
-        } 
-    }
+    
 
     public Element waitForTextIsPresentInChild(final WebElement parent, final By locator, String text) {
         WebDriverWait wait = new WebDriverWait(se.driver(), globalSeTimeOut);

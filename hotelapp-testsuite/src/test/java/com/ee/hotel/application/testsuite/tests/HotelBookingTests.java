@@ -42,4 +42,40 @@ public class HotelBookingTests extends BaseTest {
 			whenIDeleteTheBooking(booking).
 			thenTheBookingIsNotDisplayed(booking);
 	}
+	
+	@Test(description = "", dataProvider = "DefaultDataProvider", groups = { "sanity" })
+	public void PriceAcceptsSingleDecimalPoint(SeDriver se) {
+		se.log().logTestName(se.currentBrowser().toString(),"Price field accepts single decimal point");
+		
+		Booking booking = new Booking("Single", "Decimal");
+		booking.setPrice("22.22");
+		BookingPage bookingPage = new BookingPage(se);
+		
+		bookingPage.givenICreateANewBooking(booking, BookingPage.EXPECTED_SUCCESS).
+			thenANewBookingIsAdded(booking);
+	}
+	
+	@Test(description = "", dataProvider = "DefaultDataProvider", groups = { "sanity" })
+	public void MultipleDecimalsInPriceNotAccepted(SeDriver se) {
+		se.log().logTestName(se.currentBrowser().toString(),"Multiple Decimals In Price Not Accepted");
+		
+		Booking booking = new Booking("Multiple", "Decimals");
+		booking.setPrice("22.2.2");
+		BookingPage bookingPage = new BookingPage(se);
+		
+		bookingPage.givenICreateANewBooking(booking, BookingPage.EXPECTED_FAILURE).
+			thenTheBookingIsNotDisplayed(booking);
+	}
+	
+	@Test(description = "", dataProvider = "DefaultDataProvider", groups = { "sanity" })
+	public void CharactersInPriceNotAccepted(SeDriver se) {
+		se.log().logTestName(se.currentBrowser().toString(),"Characters In Price Not Accepted");
+		
+		Booking booking = new Booking("characters", "in-price");
+		booking.setPrice("abc");
+		BookingPage bookingPage = new BookingPage(se);
+		
+		bookingPage.givenICreateANewBooking(booking, BookingPage.EXPECTED_FAILURE).
+			thenTheBookingIsNotDisplayed(booking);
+	}
 }

@@ -9,6 +9,9 @@ import com.ee.hotel.application.testsuite.domain.Booking;
 import com.ee.hotel.application.testsuite.framework.SeDriver;
 
 public class BookingPage extends BasePageObject {
+	public final static boolean EXPECTED_SUCCESS = true;
+	public final static boolean EXPECTED_FAILURE = false;
+	
 	// elements
 	private By BOOKINGPAGE_LOCATOR = By.id("form");
 
@@ -19,6 +22,8 @@ public class BookingPage extends BasePageObject {
 	private By CHECKIN_INPUT_FIELD = By.id("checkin");
 	private By CHECKOUT_INPUT_FIELD = By.id("checkout");
 	private By SAVE_BTN = By.cssSelector("#form > .row > div:nth-of-type(7) > input");
+	
+	
 
 	public BookingPage(SeDriver se) {
 		super(se);
@@ -56,12 +61,52 @@ public class BookingPage extends BasePageObject {
 			return null;
 
 	}
+	
+	public BookingPage givenICreateANewBooking(Booking booking, boolean expectedResult) {
+		se.log().logTestStep("Given I create a new booking");
+		
+		if (expectedResult) {
+			return attemptToCreateValidBooking(booking);
+		}
+		
+		return attemptToCreateInValidBooking(booking);		
+	}
+	
+	public BookingPage attemptToCreateValidBooking(Booking booking) {
+		se.log().logStepTrace("Attempting to create a valid booking");
+		if (navigateTo().waitForPageToLoad() != null){
+			if (submitBooking(booking, true)){
+				se.log().logSuccess("Booking created for: " + generateBookingLogString(booking));
+				return this;
+			}
+			se.log().logProblem("Unable to make booking for: " + generateBookingLogString(booking));
+			return this;
+		}
+		else{
+			return null;
+		}
+	}
+	
+	public BookingPage attemptToCreateInValidBooking(Booking booking) {
+		se.log().logStepTrace("Attempting to create an invalid booking");
+		if (navigateTo().waitForPageToLoad() != null){
+			if (submitBooking(booking, false)){
+				se.log().logProblem("Booking was created for: " + generateBookingLogString(booking));
+				return this;
+			}
+			se.log().logSuccess("Unable to make booking for: " + generateBookingLogString(booking));
+			return this;
+		}
+		else{
+			return null;
+		}
+	}
 
 	public BookingPage givenABookingExistsFor(Booking booking) {
 		se.log().logTestStep("Given A Booking Exists For A Provided Booking");
 		
 		if (navigateTo().waitForPageToLoad() != null){
-			if (submitBooking(booking)){
+			if (submitBooking(booking, true)){
 				se.log().logSuccess("Booking exists for: " + generateBookingLogString(booking));
 				return this;
 			}
@@ -77,7 +122,7 @@ public class BookingPage extends BasePageObject {
 	public BookingPage whenIsubmitValidBooking(Booking booking) {
 		se.log().logTestStep("When I Submit A Valid Booking");
 		
-		if (submitBooking(booking))
+		if (submitBooking(booking, true))
 			return this;
 		return null;
 	}
@@ -85,9 +130,13 @@ public class BookingPage extends BasePageObject {
 	public BookingPage whenIDeleteTheBooking(Booking booking) {
 		se.log().logTestStep("When I Delete The Booking");
 		
-		if (deleteBooking(booking))
-			return this;
-		return null;
+		if (deleteBooking(booking)){
+			se.log().logSuccess("Booking deleted for booking: " + generateBookingLogString(booking));
+		} else{
+			se.log().logProblem("Booking NOT deleted for booking: " + generateBookingLogString(booking));
+		}
+			
+		return this;
 	}
 
 	public void thenANewBookingIsAdded(Booking booking) {
@@ -127,7 +176,7 @@ public class BookingPage extends BasePageObject {
 	
 	//Micro Steps
 	
-	public boolean submitBooking(Booking booking) {
+	public boolean submitBooking(Booking booking, boolean expected) {
 		int errors = 0;
 		String fName = booking.getFirstname();
 		String lName = booking.getLastname();
@@ -150,8 +199,12 @@ public class BookingPage extends BasePageObject {
 			errors++;
 		if (errors < 1) {
 			if (submitForm()) {
-				se.log().logSuccess("Submitted Booking for: " + generateBookingLogString(booking));
-				return true;
+				se.log().logInfo("Submitted Booking for: " + generateBookingLogString(booking));
+				if(isBookingPresent(booking, expected)) {
+					return true;
+				}
+				return false;
+				
 			}
 		}
 		
@@ -168,6 +221,7 @@ public class BookingPage extends BasePageObject {
 	}
 
 	public boolean isBookingPresent(Booking booking, boolean expected) {
+		se.browser().refresh();
 		se.element().sleep(4 * 1000);
 		List<WebElement> bookings = getBookings();
 		
@@ -199,23 +253,26 @@ public class BookingPage extends BasePageObject {
 
 			if(isBookingPresent(booking, fName, lName, price, deposit,checkin, checkout)){
 				if(expected){
-					se.log().logSuccess("Booking has been located succesfully for: " + generateBookingLogString(booking));
+					se.log().logInfo("Booking has been located succesfully for: " + generateBookingLogString(booking));
 					return true;
-				}else{
-					se.log().logProblem("Unable to locate Booking for: "+ generateBookingLogString(booking));
-					return false;
-				}
-				
+				}	
 			}
+			
+//			else{
+//				se.log().logInfo("Unable to locate Booking for: "+ generateBookingLogString(booking));
+//				//return false;
+//			}
 		}
 		
+		se.log().logInfo("Unable to locate Booking for: "+ generateBookingLogString(booking));
+		
 		if(expected){
-			se.log().logProblem("Booking is INCORRECTLY present for: " + generateBookingLogString(booking));
-			return true;
+			se.log().logProblem("Booking is not present for: " + generateBookingLogString(booking));
 		}else{
 			se.log().logSuccess("Booking is not present as expected for: "+ generateBookingLogString(booking));
-			return false;
 		}
+		
+		return false;
 		
 	}
 
@@ -223,47 +280,52 @@ public class BookingPage extends BasePageObject {
 		se.log().logStepTrace("Deleting Booking");
 		se.element().sleep(4 * 1000);
 		List<WebElement> bookings = getBookings();
+		boolean found = false;
+		int retryCount = 3;
+		
+		for (int count = 0; found == false  && count < retryCount; count++){
+			for (int i = 0; i < bookings.size(); i++) {
+				String fName = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(1)"))
+						.getText();
+				String lName = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(2)"))
+						.getText();
+				String price = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(3)"))
+						.getText();
+				String deposit = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(4)"))
+						.getText();
+				String checkin = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(5)"))
+						.getText();
+				String checkout = se.element()
+						.getChildElement(bookings.get(i),
+								By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(6)"))
+						.getText();
 
-		for (int i = 0; i < bookings.size(); i++) {
-			String fName = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(1)"))
-					.getText();
-			String lName = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(2)"))
-					.getText();
-			String price = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(3)"))
-					.getText();
-			String deposit = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(4)"))
-					.getText();
-			String checkin = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(5)"))
-					.getText();
-			String checkout = se.element()
-					.getChildElement(bookings.get(i),
-							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(6)"))
-					.getText();
-
-			if(isBookingPresent(booking, fName, lName, price, deposit,checkin, checkout)){
-				if(se.element().clickChildElement(bookings.get(i),
-						By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(7) > input")) != null){
-					se.log().logSuccess("Deleted Booking for Booking: " + generateBookingLogString(booking));
-					return true;
-				}else{
-					se.log().logProblem("Unable to locate Booking for: "+ generateBookingLogString(booking));
-					return false;
-				}	
+				if(isBookingPresent(booking, fName, lName, price, deposit,checkin, checkout)){
+					if(se.element().clickChildElement(bookings.get(i),
+							By.cssSelector("#bookings > div:nth-of-type(" + (i + 1) + ") > div:nth-of-type(7) > input")) != null){
+						found = true;
+					} 
+				}
 			}
 		}
 		
-		se.log().logProblem("Unable to locate Booking for: "+ generateBookingLogString(booking));
-		return false;
+		if(found){
+			se.log().logSuccess("Deleted Booking for Booking: " + generateBookingLogString(booking));
+		} else{
+			se.log().logProblem("Unable to locate Booking for: "+ generateBookingLogString(booking));
+		}
+		
+		return found;
 	}
 	
 	private boolean isBookingPresent(Booking booking, String fName, String lName, String price, String deposit, String checkin, String checkout){

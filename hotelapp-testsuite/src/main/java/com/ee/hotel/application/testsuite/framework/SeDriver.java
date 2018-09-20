@@ -1,6 +1,7 @@
 package com.ee.hotel.application.testsuite.framework;
 
 import org.openqa.selenium.Proxy;
+import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -86,7 +87,7 @@ public class SeDriver {
 	 */
 	public void startSession(Browsers myBrowser) {
 		Proxy proxy = new Proxy();
-		proxy.setAutodetect(true);
+		proxy.setProxyType(ProxyType.AUTODETECT);
 		startSession(myBrowser, proxy);
 	}
 
@@ -168,7 +169,7 @@ public class SeDriver {
 	private FirefoxProfile getFirefoxProfile(FirefoxProfile profile) {
 		if (profile == null)
 			profile = new FirefoxProfile();
-		profile.setEnableNativeEvents(false);
+		//profile.setEnableNativeEvents(false);
 		return profile;
 	}
 }

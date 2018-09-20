@@ -24,6 +24,10 @@ public class Log {
 		logMessage("         SUCCESS: " + msg);
 	}
 	
+	public void logInfo(String msg){
+		logMessage("         INFO: " + msg);
+	}
+	
 	public void logBrowserName(String name){
 		logMessage("TEST BROWSER: " + name);
 	}
