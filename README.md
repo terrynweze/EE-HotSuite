@@ -25,7 +25,8 @@ Test 6 - 'Characters In Price Not Accepted'
 	This test attempts to create a booking which has characters in the price field and ensures the booking is not accepted.
 Test 7 - 'Unable to create bookings in the past'
 	
-	This test case attempts to create a booking in the past and verifies you are unable to do so. (This test fails in the suite as there is a defect in the application that allows you to create bookings in the past)
+	This test case attempts to create a booking in the past and verifies you are unable to do so. 
+	(This test fails in the suite as there is a defect in the application that allows you to create bookings in the past)
 
 The test suite makes use of Maven and TestNG with the report being generated using ReportNG.
 Interaction with the browser is done so using Selenium WebDriver and the Page Object Model has been adopted.
